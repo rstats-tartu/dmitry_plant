@@ -1,6 +1,6 @@
 ---
-title: "plant project"
-output: html_notebook
+title: "Plant project"
+output: github_document
 ---
 
 ```{r}
@@ -19,7 +19,7 @@ Temp- mean temperature
 ```{r}
 ir <- read_csv2("Ir.csv")
 ir <- select(ir, date, plant_id, plant_name, genotype, Temp = "Temp-avg")
-ir_summary <- ir %>% group_by(date, plant_name, genotype) %>% summarise(N=n())
+ir_summary <- ir %>% group_by(date, plant_name, genotype) %>% summarise(N = n())
 ```
 
 morpho - area in mm
@@ -48,13 +48,13 @@ df1 <- df1 %>% left_join(measure1)
 
 Temp
 ```{r}
-df1 %>% ggplot(aes(date, Temp, color=genotype)) + geom_jitter(size=0.2)+
-  facet_wrap(~plant_name)
+df1 %>% ggplot(aes(date, Temp, color = genotype)) + geom_jitter(size = 0.2) +
+  facet_wrap(~ plant_name)
 ```
 
 
 ```{r}
-df1 %>% ggplot(aes(date, QY_max, color=genotype)) + geom_jitter(size=0.2)+
+df1 %>% ggplot(aes(date, QY_max, color = genotype)) + geom_jitter(size=0.2)+
   facet_wrap(~plant_name)
 ```
 Siin juhtub midagi huvitavat LC_LT_LW_HL paneelil - varieeruvus kahaneb ja kasvab jälle. Kas QY -4 on võimalik?

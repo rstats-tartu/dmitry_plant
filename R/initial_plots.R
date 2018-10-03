@@ -1,10 +1,8 @@
 
 # Load libraries
-require(readxl)
-require(dplyr)
-require(tidyr)
-require(ggplot2)
-require(lubridate)
+library(tidyverse)
+library(readxl)
+library(lubridate)
 
 # Import data
 fc <- read_xlsx("data/Fc_Plant.xlsx") %>% 
