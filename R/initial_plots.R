@@ -7,15 +7,15 @@ require(ggplot2)
 require(lubridate)
 
 # Import data
-fc <- read_xlsx("Fc_Plant.xlsx") %>% 
+fc <- read_xlsx("data/Fc_Plant.xlsx") %>% 
   separate(plant_name, c("co2", "temp", "water", "light"), sep = "_")
-ir <- read_xlsx("Ir_Plant.xlsx") %>% 
+ir <- read_xlsx("data/Ir_Plant.xlsx") %>% 
   separate(plant_name, c("co2", "temp", "water", "light"), sep = "_")
-drgb <- read_xlsx("Rgb_Morpho_Plant.xlsx") %>% 
+drgb <- read_xlsx("data/Rgb_Morpho_Plant.xlsx") %>% 
   separate(plant_name, c("co2", "temp", "water", "light"), sep = "_")
-sc <- read_xlsx("ScalesMeasure.xlsx") %>% 
+sc <- read_xlsx("data/ScalesMeasure.xlsx") %>% 
   separate(plant_name, c("co2", "temp", "water", "light"), sep = "_")
-irb <- read_xlsx("Ir_Plant_before.xlsx") %>% 
+irb <- read_xlsx("data/Ir_Plant_before.xlsx") %>% 
   separate(plant_name, c("co2", "temp", "water", "light"), sep = "_")
 
 fc$date = as.character(fc$date)
@@ -38,71 +38,63 @@ drgb$day = ymd(drgb$day)
 
 sc$date = ymd(sc$date)
 sc$day = sc$date
-sc = select(sc, -date, - time)
+sc = select(sc, -date, -time)
 
-#plots
-
-fc %>%
-  filter(day > "2018-08-04")%>%
-  ggplot(aes(day, QY_max, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+# Plots
 
 fc %>%
-  filter(day > "2018-08-04")%>%
-  ggplot(aes(day, QY_Lss, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  filter(day > "2018-08-04") %>%
+  ggplot(aes(day, QY_max, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 fc %>%
-  filter(day > "2018-08-04")%>%
-  ggplot(aes(day, NPQ_Lss, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  filter(day > "2018-08-04") %>%
+  ggplot(aes(day, QY_Lss, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 fc %>%
-  filter(day > "2018-08-04")%>%
-  ggplot(aes(day, Rfd_Lss, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  filter(day > "2018-08-04") %>%
+  ggplot(aes(day, NPQ_Lss, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
+
+fc %>%
+  filter(day > "2018-08-04") %>%
+  ggplot(aes(day, Rfd_Lss, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 ir %>%
-  filter(day != "2018-08-06")%>%
-  ggplot(aes(day, `Temp-avg`, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  filter(day != "2018-08-06") %>%
+  ggplot(aes(day, `Temp-avg`, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 irb %>%
-  filter(day != "2018-08-06")%>%
-  ggplot(aes(day, `Temp-avg`, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  filter(day != "2018-08-06") %>%
+  ggplot(aes(day, `Temp-avg`, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 drgb %>%
-  ggplot(aes(day, AREA_MM, color = genotype))+
-  stat_summary(fun.y = mean, geom = "line")+
-  stat_summary(fun.data = mean_se, geom = "pointrange")+
-  facet_grid(water ~ light)+
-  theme_bw()
+  ggplot(aes(day, AREA_MM, color = genotype)) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "pointrange") +
+  facet_grid(water ~ light)
 
 sc %>%
-  filter(genotype != "empty")%>%
-  ggplot(aes(day, weight, color = plant_id))+
-  geom_line()+
-  facet_grid(water ~ light)+
-  theme_bw()+
+  filter(genotype != "empty") %>%
+  ggplot(aes(day, weight, color = plant_id)) +
+  geom_line() +
+  facet_grid(water ~ light) +
   guides(color = FALSE)
 
 
