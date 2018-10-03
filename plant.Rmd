@@ -1,0 +1,171 @@
+---
+title: "plant project"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(reshape2)
+```
+
+QY_max - max quantum yield
+```{r}
+fc <- read_csv2("Fc.csv")
+fc <- select(fc, date, plant_id, plant_name, genotype, QY_max)
+```
+
+
+Temp- mean temperature
+```{r}
+ir <- read_csv2("Ir.csv")
+ir <- select(ir, date, plant_id, plant_name, genotype, Temp = "Temp-avg")
+ir_summary <- ir %>% group_by(date, plant_name, genotype) %>% summarise(N=n())
+```
+
+morpho - area in mm
+```{r}
+morpho <- read_csv2("Morpho.csv")
+morpho <- select(morpho, date, plant_id, plant_name, genotype, area = AREA_MM)
+```
+
+weight in grams
+```{r}
+measure <- read_csv2("Measure.csv")
+measure <- select(measure, date, plant_id, plant_name, genotype, weight)
+```
+
+```{r}
+df1 <- left_join(fc, ir)
+df1 <- left_join(df1, morpho)
+df1 <- drop_na(df1)
+```
+
+measure tabelis on ainult 1. ajapunktis mõõdetud weight-i 2 korda - võtan neist keskmise. 
+```{r}
+measure1 <- measure %>% group_by(date, plant_id) %>% summarise(weight = mean(weight))
+df1 <- df1 %>% left_join(measure1)
+```
+
+Temp
+```{r}
+df1 %>% ggplot(aes(date, Temp, color=genotype)) + geom_jitter(size=0.2)+
+  facet_wrap(~plant_name)
+```
+
+
+```{r}
+df1 %>% ggplot(aes(date, QY_max, color=genotype)) + geom_jitter(size=0.2)+
+  facet_wrap(~plant_name)
+```
+Siin juhtub midagi huvitavat LC_LT_LW_HL paneelil - varieeruvus kahaneb ja kasvab jälle. Kas QY -4 on võimalik?
+
+
+```{r}
+df1 %>% ggplot(aes(date, area, color=genotype)) + geom_jitter(size=0.2)+
+  facet_wrap(~plant_name)
+```
+
+```{r}
+df1 %>% ggplot(aes(factor(date), area, color=genotype)) + geom_boxplot()+
+  facet_wrap(~plant_name)
+```
+
+```{r}
+df1 %>% ggplot(aes(date, weight, color=genotype)) + geom_jitter(size=0.2)+
+  facet_wrap(~plant_name)
+```
+
+Siin kõik punktid, aga plotime keskmised:
+
+
+```{r}
+df2 <- df1 %>% group_by(date, plant_name, genotype) %>% 
+  summarise(QY = mean(QY_max), Temp = mean(Temp), area = mean(area), weight = mean(weight))
+df2 %>% ggplot(aes(date, Temp, color=genotype))+ geom_line()+
+  facet_wrap(~plant_name)
+```
+
+```{r}
+df2 %>% ggplot(aes(date, QY, color=genotype))+ geom_line()+
+  facet_wrap(~plant_name)
+```
+
+```{r}
+df2 %>% ggplot(aes(date, area, color=genotype))+ geom_line()+
+  facet_wrap(~plant_name)
+```
+
+```{r}
+df2 %>% ggplot(aes(date, weight, color=genotype))+ geom_line()+
+  facet_wrap(~plant_name)
+```
+
+# vaatame otse efekti suurusi
+
+## katse HW_HL - ir1
+```{r}
+ir_w <- ir %>% drop_na() %>%  spread(key= plant_name, value = Temp) %>% select(-plant_id)
+ir_1 <- ir_w %>% filter(LC_LT_HW_HL > 0) %>% select(-LC_LT_HW_LL, -LC_LT_LW_HL, -LC_LT_LW_LL) %>% 
+  arrange(date, genotype)
+ir_2 <- ir_w %>% filter(LC_LT_HW_LL > 0) %>% select(-LC_LT_HW_HL, -LC_LT_LW_HL, -LC_LT_LW_LL)%>% 
+  arrange(date, genotype)
+ir_3 <- ir_w %>% filter(LC_LT_LW_HL > 0) %>% select(-LC_LT_HW_HL, -LC_LT_HW_LL, -LC_LT_LW_LL)%>% 
+  arrange(date, genotype)
+ir_4 <- ir_w %>% filter(LC_LT_LW_LL > 0) %>% select(-LC_LT_HW_HL, -LC_LT_HW_LL, -LC_LT_LW_HL)%>% 
+  arrange(date, genotype)
+
+  
+#ir1 on LC_LT_HW_HL katsetingimus
+ir_1_wt <- ir_1 %>% filter(genotype == "Col-0") 
+ir_1_MES5 <- ir_1 %>% filter(genotype == "MES5") 
+ir1_wt_MES5 <- bind_cols(ir_1_wt, ir_1_MES5)
+#ir1_wt_MES5$date == ir1_wt_MES5$date1
+ir1_wt_MES5 <- ir1_wt_MES5 %>% transmute(date, mes5_hwhl= LC_LT_HW_HL1 - LC_LT_HW_HL)
+ggplot(ir1_wt_MES5, aes(date, mes5_hwhl))+ geom_point(size=0.4) + geom_hline(yintercept = 0)+ geom_smooth(method = "lm")
+```
+
+MES7 mutant HW_HL katses
+```{r}
+ir_1_MES7 <- ir_1 %>% filter(genotype == "MES7") 
+ir1_wt_MES7 <- bind_cols(ir_1_wt, ir_1_MES7)
+ir1_wt_MES7$date == ir1_wt_MES7$date1
+ir1_wt_MES7 <- ir1_wt_MES7 %>% transmute(date, mes7_hwhl= LC_LT_HW_HL1 - LC_LT_HW_HL)
+ggplot(ir1_wt_MES7, aes(date, mes7_hwhl))+ geom_point(size=0.4) + geom_hline(yintercept = 0)+ geom_smooth(method = "lm")
+```
+
+ht1-2 mutant HW_HL katses
+
+```{r}
+ir_1_ht1_2 <- ir_1 %>% filter(genotype == "ht1-2") 
+ir1_wt_ht1_2 <- bind_cols(ir_1_wt, ir_1_ht1_2)
+ir1_wt_ht1_2$date == ir1_wt_ht1_2$date1
+ir1_wt_ht1_2 <- ir1_wt_ht1_2 %>% transmute(date, ht1_2_hwhl= LC_LT_HW_HL1 - LC_LT_HW_HL)
+ggplot(ir1_wt_ht1_2, aes(date, ht1_2_hwhl))+ geom_point(size=0.4) + geom_hline(yintercept = 0) + geom_smooth(method = "lm")
+```
+
+```{r}
+ir_1_ht1_4 <- ir_1 %>% filter(genotype == "ht1-4") 
+ir1_wt_ht1_4 <- bind_cols(ir_1_wt, ir_1_ht1_4)
+ir1_wt_ht1_4$date == ir1_wt_ht1_4$date1
+ir1_wt_ht1_4 <- ir1_wt_ht1_4 %>% transmute(date, ht1_4_hwhl= LC_LT_HW_HL1 - LC_LT_HW_HL)
+ggplot(ir1_wt_ht1_4, aes(date, ht1_4_hwhl))+ geom_point(size=0.4) + geom_hline(yintercept = 0) + geom_smooth(method = "lm")
+```
+
+```{r}
+ir_1_ht1_2 %>% group_by(date) %>% summarise(N=n())
+```
+
+```{r}
+ir_1_ht1_5 %>% group_by(date) %>% summarise(N=n())
+
+```
+
+
+```{r}
+ir_1_ht1_5 <- ir_1 %>% filter(genotype == "ht1-5") 
+ir1_wt_ht1_5 <- bind_cols(ir_1_wt, ir_1_ht1_5)
+ir1_wt_ht1_5$date == ir1_wt_ht1_5$date1
+ir1_wt_ht1_5 <- ir1_wt_ht1_5 %>% transmute(date, ht1_5_hwhl= LC_LT_HW_HL1 - LC_LT_HW_HL)
+ggplot(ir1_wt_ht1_5, aes(date, ht1_5_hwhl))+ geom_point(size=0.4) + geom_hline(yintercept = 0) + geom_smooth(method = "lm")
+```
+
