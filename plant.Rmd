@@ -10,7 +10,7 @@ library(skimr)
 
 QY_max - max quantum yield
 ```{r}
-fc <- read_delim("Fc.csv", delim = ";", locale = locale(decimal_mark = ","))
+fc <- read_delim("data/Fc.csv", delim = ";", locale = locale(decimal_mark = ","))
 fc <- select(fc, date, plant_id, plant_name, genotype, QY_max)
 ```
 
@@ -47,7 +47,7 @@ ggplot(data = fc) +
 
 Temp-mean temperature
 ```{r}
-ir <- read_delim("Ir.csv", delim = ";", locale = locale(decimal_mark = ","))
+ir <- read_delim("data/Ir.csv", delim = ";", locale = locale(decimal_mark = ","))
 ir <- select(ir, date, plant_id, plant_name, genotype, temp = "Temp-avg") %>% 
   filter(genotype != "empty")
 ```
@@ -61,7 +61,7 @@ ggplot(data = ir) +
 
 Morpho - area in mm
 ```{r}
-morpho <- read_delim("Morpho.csv", delim = ";", locale = locale(decimal_mark = ","))
+morpho <- read_delim("data/Morpho.csv", delim = ";", locale = locale(decimal_mark = ","))
 morpho <- select(morpho, date, plant_id, plant_name, genotype, area = AREA_MM) %>% 
   filter(genotype != "empty")
 ```
@@ -76,7 +76,7 @@ ggplot(data = morpho) +
 
 weight in grams
 ```{r}
-measure <- read_delim("Measure.csv", delim = ";", locale = locale(decimal_mark = ","))
+measure <- read_delim("data/Measure.csv", delim = ";", locale = locale(decimal_mark = ","))
 measure <- select(measure, date, plant_id, plant_name, genotype, weight) %>% 
   filter(genotype != "empty")
 ```
