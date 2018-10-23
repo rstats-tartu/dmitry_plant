@@ -1,6 +1,6 @@
 ---
-title: "plant project"
-output: html_notebook
+title: "Plant project"
+output: github_document
 ---
 
 ```{r warning=FALSE, message=FALSE, error=FALSE}
@@ -290,7 +290,7 @@ Oh yes, date must first be converted to numeric to be fitted!
 ```
 
 ```{r}
-
+temp
 ```
 
 
