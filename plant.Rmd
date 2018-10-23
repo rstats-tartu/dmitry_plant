@@ -1,0 +1,296 @@
+---
+title: "plant project"
+output: html_notebook
+---
+
+```{r warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+library(skimr)
+```
+
+QY_max - max quantum yield
+```{r}
+fc <- read_delim("Fc.csv", delim = ";", locale = locale(decimal_mark = ","))
+fc <- select(fc, date, plant_id, plant_name, genotype, QY_max)
+```
+
+
+```{r}
+skim(fc)
+```
+
+**PLEASE PRINT OUT THE ROWS WITH 10 LOWEST QT_MAX NUMBERS** Can QY be negative?
+
+```{r}
+top_n(fc, 10, desc(QY_max))
+```
+
+There are negative QY! which are impossible, let's filter them out:
+```{r}
+fc <- filter(fc, QY_max > 0)
+```
+
+
+```{r}
+ggplot(data = fc) +
+  geom_histogram(mapping = aes(x = QY_max), bins = 30)
+```
+
+
+**PLEASE DO A FACETED HISTOGRAM ACCROSS MUTANTS~EXP CONDITIONS**
+```{r}
+ggplot(data = fc) +
+  geom_histogram(mapping = aes(x = QY_max), bins = 30) +
+  facet_grid(genotype ~ plant_name)
+```
+
+
+Temp-mean temperature
+```{r}
+ir <- read_delim("Ir.csv", delim = ";", locale = locale(decimal_mark = ","))
+ir <- select(ir, date, plant_id, plant_name, genotype, temp = "Temp-avg") %>% 
+  filter(genotype != "empty")
+```
+
+```{r}
+ggplot(data = ir) +
+  geom_histogram(mapping = aes(x = temp), bins = 30) +
+  facet_grid(genotype ~ plant_name)
+```
+
+
+Morpho - area in mm
+```{r}
+morpho <- read_delim("Morpho.csv", delim = ";", locale = locale(decimal_mark = ","))
+morpho <- select(morpho, date, plant_id, plant_name, genotype, area = AREA_MM) %>% 
+  filter(genotype != "empty")
+```
+
+
+```{r}
+ggplot(data = morpho) +
+  geom_histogram(mapping = aes(x = area), bins = 30) +
+  facet_grid(genotype ~ plant_name)
+```
+
+
+weight in grams
+```{r}
+measure <- read_delim("Measure.csv", delim = ";", locale = locale(decimal_mark = ","))
+measure <- select(measure, date, plant_id, plant_name, genotype, weight) %>% 
+  filter(genotype != "empty")
+```
+
+
+
+```{r}
+ggplot(data = measure) +
+  geom_histogram(mapping = aes(x = weight), bins = 30) +
+  facet_grid(genotype ~ plant_name)
+```
+
+join() joins 2 df-s, which have some common variables (with identical column names), and some separate variables. By default the final df has every variable once (but this can be changed - see ?join).
+```{r}
+plant <- left_join(fc, ir) %>% 
+  left_join(morpho) %>% 
+  drop_na()
+```
+
+While ir and morpho have 5040 obs, measure has 5060. Why is that?
+```{r}
+measure %>% 
+  group_by(date, plant_id, plant_name, genotype) %>% 
+  summarise(N = n())
+```
+
+In the measure df there is a single time point where weigth is measured twice - lets proceed with the mean weigth then.
+```{r}
+measure <- measure %>% 
+  group_by(date, plant_id) %>% 
+  summarise(weight = mean(weight))
+plant <- plant %>% left_join(measure)
+```
+
+Temp
+```{r}
+plant %>% 
+  ggplot(mapping = aes(x = date, y = temp, color = genotype)) + 
+  geom_jitter(size = 0.2) +
+  facet_wrap(~plant_name)
+```
+
+QY
+```{r}
+plant %>% 
+  ggplot(mapping = aes(x = date, y = QY_max, color = genotype)) + 
+  geom_jitter(size = 0.2) +
+  facet_wrap(~plant_name)
+```
+Siin juhtub midagi huvitavat LC_LT_LW_HL paneelil - varieeruvus kahaneb ja kasvab jälle. Kas QY -4 on võimalik?
+
+AREA
+```{r}
+plant %>% 
+  ggplot(aes(x = date, y = area, color = genotype)) + 
+  geom_jitter(size = 0.2) +
+  facet_wrap(~plant_name)
+```
+
+weigth
+```{r}
+plant %>% 
+  ggplot(aes(x = date, y = weight, color = genotype)) + 
+  geom_jitter(size = 0.2) +
+  facet_wrap(~plant_name)
+```
+
+
+Making the plant name more readable by removing the redundant part
+```{r}
+levels(factor(plant$plant_name))
+```
+
+
+```{r}
+plant <- mutate(plant, plant_name = str_replace(plant_name, "LC_LT_", ""))
+```
+
+Siin kõik punktid, aga plotime keskmised:
+
+
+```{r}
+plant_gt <- plant %>% 
+  group_by(date, plant_name, genotype) %>% 
+  summarise(qy = mean(QY_max), 
+            temp = mean(temp), 
+            area = mean(area), 
+            weight = mean(weight))
+ggplot(data = plant_gt, mapping = aes(x = date, y = temp, color = genotype)) + 
+  geom_line() +
+  facet_wrap(~plant_name)
+```
+QY
+```{r}
+ggplot(data = plant_gt, mapping = aes(x = date, y = qy, color = genotype)) + 
+  geom_line() +
+  facet_wrap(~plant_name)
+```
+
+```{r}
+ggplot(data = plant_gt, mapping = aes(x = date, y = area, color = genotype)) + 
+  geom_line() +
+  facet_wrap(~plant_name)
+```
+
+```{r}
+ggplot(data = plant_gt, mapping = aes(x = date, y = weight, color = genotype)) + 
+  geom_line() +
+  facet_wrap(~plant_name)
+```
+
+# Vaatame otse efekti suurusi
+
+DEFINITION: ES = wt - mutant
+
+**Excersise:** After reading the following code, add ht1-4 to the analysis.
+
+```{r}
+unique(plant$genotype)
+unique(plant$plant_name)
+```
+
+
+ES tables for condition **HW_LL** (hig water, low ligth). If we have the same nr of rows in wt and mutant, we use bind_col(), otherwise we use left_join() and keep the nr of rows the same as the shorte table (in this case the mutant ht1-5 tabe)
+```{r}
+qy_max <- select(plant, date:genotype, QY_max) %>% 
+  spread(key = genotype, value = QY_max) %>% 
+  group_by(date, plant_name) %>% 
+  summarise_at(vars(`Col-0`, `ht1-2`, `ht1-4`, `ht1-5`, MES5, MES7), funs(mean), na.rm = TRUE) %>% 
+  mutate(ht12_es = `ht1-2` - `Col-0`, 
+         ht14_es = `ht1-4` - `Col-0`,
+         ht15_es = `ht1-5` - `Col-0`,
+         mes5_es = MES5 - `Col-0`,
+         mes7_es = MES7 - `Col-0`) %>% 
+  select(date, plant_name, ends_with("es")) %>% 
+  gather(key, value, ht12_es:mes7_es)
+```
+
+```{r}
+ggplot(data = qy_max) +
+  geom_line(mapping = aes(x = date, y = value, color = key)) +
+  facet_wrap(~plant_name)
+```
+
+```{r}
+temp <- select(plant, date:genotype, temp) %>% 
+  spread(key = genotype, value = temp) %>% 
+  group_by(date, plant_name) %>% 
+  summarise_at(vars(`Col-0`, `ht1-2`, `ht1-4`, `ht1-5`, MES5, MES7), funs(mean), na.rm = TRUE) %>% 
+  mutate(ht12_es = `ht1-2` - `Col-0`, 
+         ht14_es = `ht1-4` - `Col-0`,
+         ht15_es = `ht1-5` - `Col-0`,
+         mes5_es = MES5 - `Col-0`,
+         mes7_es = MES7 - `Col-0`) %>% 
+  select(date, plant_name, ends_with("es")) %>% 
+  gather(key, value, ht12_es:mes7_es)
+```
+
+
+```{r}
+ggplot(data = temp) +
+  geom_line(mapping = aes(x = date, y = value, color = key)) +
+  facet_wrap(~plant_name)
+```
+
+```{r}
+area <- select(plant, date:genotype, area) %>% 
+  spread(key = genotype, value = area) %>% 
+  group_by(date, plant_name) %>% 
+  summarise_at(vars(`Col-0`, `ht1-2`, `ht1-4`, `ht1-5`, MES5, MES7), funs(mean), na.rm = TRUE) %>% 
+  mutate(ht12_es = `ht1-2` - `Col-0`, 
+         ht14_es = `ht1-4` - `Col-0`,
+         ht15_es = `ht1-5` - `Col-0`,
+         mes5_es = MES5 - `Col-0`,
+         mes7_es = MES7 - `Col-0`) %>% 
+  select(date, plant_name, ends_with("es")) %>% 
+  gather(key, value, ht12_es:mes7_es)
+```
+
+```{r}
+ggplot(data = area) +
+  geom_line(mapping = aes(x = date, y = value, color = key)) +
+  facet_wrap(~plant_name)
+```
+
+```{r}
+weight <- select(plant, date:genotype, weight) %>% 
+  spread(key = genotype, value = weight) %>% 
+  group_by(date, plant_name) %>% 
+  summarise_at(vars(`Col-0`, `ht1-2`, `ht1-4`, `ht1-5`, MES5, MES7), funs(mean), na.rm = TRUE) %>% 
+  mutate(ht12_es = `ht1-2` - `Col-0`, 
+         ht14_es = `ht1-4` - `Col-0`,
+         ht15_es = `ht1-5` - `Col-0`,
+         mes5_es = MES5 - `Col-0`,
+         mes7_es = MES7 - `Col-0`) %>% 
+  select(date, plant_name, ends_with("es")) %>% 
+  gather(key, value, ht12_es:mes7_es)
+```
+
+```{r}
+ggplot(data = weight) +
+  geom_line(mapping = aes(x = date, y = value, color = key)) +
+  facet_wrap(~plant_name)
+```
+
+Here we could for example model the areas accross mutants and conditions and control for temp. But to do such a thing with any meaning, I should know more about the science. 
+
+Oh yes, date must first be converted to numeric to be fitted!
+```{r}
+#lm(area~date:genotye:condition  + temp, data=df_es)
+```
+
+```{r}
+
+```
+
+
