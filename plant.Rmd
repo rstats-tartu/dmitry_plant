@@ -66,7 +66,9 @@ ggplot(data = fc) +
 ```{r}
 ggplot(data = fc) +
   geom_line(mapping = aes(x = day, y = qymax, group = plant_id)) +
-  facet_wrap(~ str_c(tray_id, cond, sep = " "))
+  facet_wrap(~ str_c(tray_id, cond, sep = " ")) +
+  labs(caption = "QY_max - max quantum yield of PSII per tray.")
+ggsave("output/qymax_per_tray.png")
 ```
 
 By condition:
@@ -74,7 +76,9 @@ By condition:
 ggplot(data = fc) +
   geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype), size = 0.2) +
   facet_wrap(~ cond) +
-  scale_color_viridis_d()
+  scale_color_viridis_d() +
+  labs(caption = "QY_max - max quantum yield of PSII per environmental condition. Color, plant genotype.")
+ggsave("output/qymax_per_env.png")
 ```
 
 Genotypes seem to mix, apparently bigger differences between environmental conditions .
@@ -93,8 +97,8 @@ ggplot(data = fc) +
   geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype), size = 0.2) +
   facet_grid(str_extract(position, "\\w") ~ str_extract(position, "\\d")) +
   scale_color_viridis_d() +
-  labs(caption = "QY_max - max quantum yield of PSII per tray position.")
-ggsave("output/qymax_per_tray.png")
+  labs(caption = "QY_max - max quantum yield of PSII per tray position. Color, plant genotype.")
+ggsave("output/qymax_per_pos.png")
 ```
 
 
