@@ -26,6 +26,7 @@ Data is saved into **data** folder.
 - **scales_measure.csv** is derived from 'ScalesMeasure.xlsx'
     - Y -- weight (g)
 
+## Some exploratory plots
 
 ![qy_max](output/qymax_per_pos.png)
 
