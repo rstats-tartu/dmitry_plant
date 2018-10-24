@@ -25,3 +25,5 @@ Data is saved into **data** folder.
 
 - **scales_measure.csv** is derived from 'ScalesMeasure.xlsx'
     - Y -- weight (g)
+
+![qy_max](output/qymax_per_tray.png)
