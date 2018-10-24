@@ -93,7 +93,7 @@ ggplot(data = fc) +
   geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype), size = 0.2) +
   facet_grid(str_extract(position, "\\w") ~ str_extract(position, "\\d")) +
   scale_color_viridis_d() +
-  labs(caption = "QY_max - max quantum yield of PSII per tray.")
+  labs(caption = "QY_max - max quantum yield of PSII per tray position.")
 ggsave("output/qymax_per_tray.png")
 ```
 
