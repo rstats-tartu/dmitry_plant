@@ -72,7 +72,7 @@ ggplot(data = fc) +
 By condition:
 ```{r}
 ggplot(data = fc) +
-  geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype)) +
+  geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype), size = 0.2) +
   facet_wrap(~ cond) +
   scale_color_viridis_d()
 ```
@@ -87,9 +87,12 @@ ggplot(data = fc) +
   facet_grid(cond ~ genotype)
 ```
 
-Now we have histogram
+Now let's make grid of line plots for each tray position. Here we don't even need to use mutate, we can use str_extract within facet_grid to get row and col ids ("\\w" is regular expression for word/character and "\\d" is for digits):
 ```{r}
-fc
+ggplot(data = fc) +
+  geom_line(mapping = aes(x = day, y = qymax, group = plant_id, color = genotype), size = 0.2) +
+  facet_grid(str_extract(position, "\\w") ~ str_extract(position, "\\d")) +
+  scale_color_viridis_d()
 ```
 
 
